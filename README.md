@@ -71,7 +71,8 @@ After that, set everything up as if it's the first time.
 ### flower
   Celery monitoring utility.
   Can be accessed on address `127.0.0.1:6660`
-  It is used for monitoring and checking tasks (scraping, mapping/transforming),   with all time consumed and eventual errors.
+  It is used for monitoring and checking tasks (scraping, mapping/transforming), 
+  with all time consumed and eventual errors.
 
 ### api-service
   It is Flask mini web api with one endpoint.
