@@ -66,23 +66,23 @@ After that, set everything up as if it's the first time.
 ## Short description of all services
 
 ### postgres
-   It is a DB service with a PostgreSQL database instance.Can be accessed on address `127.0.0.1:5432`
+  It is a DB service with a PostgreSQL database instance.Can be accessed on address `127.0.0.1:5432`
 
 ### flower
-   Celery monitoring utility.
-   Can be accessed on address `127.0.0.1:6660`
-   It is used for monitoring and checking tasks (scraping, mapping/transforming),   with all time consumed and eventual errors.
+  Celery monitoring utility.
+  Can be accessed on address `127.0.0.1:6660`
+  It is used for monitoring and checking tasks (scraping, mapping/transforming),   with all time consumed and eventual errors.
 
 ### api-service
-   It is Flask mini web api with one endpoint.
+  It is Flask mini web api with one endpoint.
 
 ### nginx
-   It is a reverse proxy for our mini Flask API.
-   Can be accessed on `127.0.0.1`. And accepts date for our single endpoint.
-   `127.0.0.1/2021/04/16` -> return result for date `2021-04-16`
+  It is a reverse proxy for our mini Flask API.
+  Can be accessed on `127.0.0.1`. And accepts date for our single endpoint.
+  `127.0.0.1/2021/04/16` -> return result for date `2021-04-16`
 
 ### beat
-   Beat service is a cron job. It triggers a scraping task every 60sec.
+  Beat service is a cron job. It triggers a scraping task every 60sec.
 
 ### worker-srcraping and worker-mapping
   These two services do scraping and mapping/transformations jobs.
