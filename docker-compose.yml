@@ -109,7 +109,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    restart: always
+    restart: 'no'
     networks:
       - db_nw
       - api_nw
