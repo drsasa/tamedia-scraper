@@ -1,0 +1,143 @@
+version: '3'
+services:
+  worker-scraping:
+    build:
+      dockerfile: ./app/Dockerfile
+      context: .
+    image: &img worker
+    command: [celery, -A, worker.app, worker, -O, fair, -E, -n, scrapping@%h, --concurrency=4, --queues=scraping, --loglevel=INFO]
+    environment: &env
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - TIME_FRAME=60
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+    networks:
+      - db_nw
+    volumes: 
+      - ./app:/app
+
+  worker-mapping:
+    build:
+      dockerfile: ./app/Dockerfile
+      context: .
+    image: *img
+    command: [celery, -A, worker.app, worker, -O, fair, -E, -n, mapping@%h, --concurrency=4, --queues=mapping, --loglevel=INFO]
+    environment: *env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+    networks:
+      - db_nw
+    volumes: 
+      - ./app:/app
+    
+  beat:
+    build:
+      dockerfile: ./app/Dockerfile
+      context: .
+    image: *img
+    command: [celery, -A, worker.app, beat, --loglevel=INFO]
+    environment: *env
+    depends_on: 
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+    networks:
+      - db_nw
+    volumes: 
+      - ./app:/app
+
+  flower:
+    build:
+      dockerfile: ./app/Dockerfile
+      context: .
+    image: *img
+    command: [flower, -A, worker.app, flower, --address=0.0.0.0, --port=6660]
+    environment: *env
+    depends_on:
+      - worker-scraping
+      - worker-mapping
+    restart: 'no'
+    volumes: 
+      - ./app:/app
+    ports:
+      - "6660:6660"
+    networks:
+      - db_nw
+    
+  redis:
+    image: redis:5
+    ports:
+      - "6379:6379"
+    networks:
+      - db_nw
+  
+  postgres:
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data/
+      - ./init/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: "pg_isready --username=postgres && psql --username=postgres --list"
+      timeout: 1s
+      retries: 20
+    networks:
+      - db_nw
+  
+  api-service:
+    build:
+      dockerfile: ./service/Dockerfile
+      context: .
+    image: api-service
+    command: [gunicorn, -w 4, --bind, 0.0.0.0:5000, wsgi:app]
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=
+    links:
+      - postgres:postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+    networks:
+      - db_nw
+      - api_nw
+    volumes: 
+      - ./service:/service
+
+  nginx-app:
+    image: nginx:latest
+    depends_on:
+      - api-service
+    links:
+      - api-service
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    expose:
+      - "80"
+    ports:
+      - "80:80"
+    networks:
+      - api_nw
+
+volumes:
+  pg_data:
+  app:
+  service:
+
+networks:
+  db_nw:
+    driver: bridge
+  api_nw:
+    driver: bridge

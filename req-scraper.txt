@@ -1,0 +1,7 @@
+celery
+psycopg2-binary
+https://github.com/mher/flower/zipball/master#egg=flower
+requests
+lxml
+redis
+gevent
