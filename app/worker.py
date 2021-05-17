@@ -15,36 +15,32 @@ POSTGRES_PORT = os.getenv("POSTGRES_PORT")
 
 db_conn = None
 
-app = Celery(
-    'celery_tasks',
-    broker=BROKER,
-    backend=BROKER
-)
+app = Celery("celery_tasks", broker=BROKER, backend=BROKER)
 app.conf.task_create_missing_queues = True
 app.conf.task_acks_late = True
 app.conf.worker_prefetch_multiplier = 1
-app.conf.timezone = 'Europe/Belgrade'
+app.conf.timezone = "Europe/Belgrade"
 app.conf.enable_utc = True
 
-max_timeout_in_seconds = 60 * 2 # 2min this is arbitrary
+max_timeout_in_seconds = 60 * 2  # 2min this is arbitrary
 app.conf.broker_transport_options = {
-    'priority_steps': list(range(10)),
-    'queue_order_strategy': 'priority',
-    'visibility_timeout': max_timeout_in_seconds,
+    "priority_steps": list(range(10)),
+    "queue_order_strategy": "priority",
+    "visibility_timeout": max_timeout_in_seconds,
 }
 
 app.autodiscover_tasks(
     [
-        'tasks',
+        "tasks",
     ],
-    force=True
+    force=True,
 )
 
 app.conf.beat_schedule = {
-    'fetch_source': {
-        'task': 'fetch_source',  
-        'schedule': float(TIME_FRAME),
-        'args': None,
+    "fetch_source": {
+        "task": "fetch_source",
+        "schedule": float(TIME_FRAME),
+        "args": None,
     }
 }
 
@@ -54,7 +50,7 @@ def init_worker(**kwargs):
     global db_conn
 
     db_conn = psycopg2.connect(
-        database='postgres',
+        database="postgres",
         host=POSTGRES_HOST,
         port=POSTGRES_PORT,
         user="postgres",

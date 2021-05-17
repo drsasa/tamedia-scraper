@@ -110,6 +110,14 @@ services:
       postgres:
         condition: service_healthy
     restart: 'no'
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
     networks:
       - db_nw
       - api_nw
@@ -124,8 +132,14 @@ services:
       - api-service
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
-    expose:
-      - "80"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
     ports:
       - "80:80"
     networks:

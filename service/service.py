@@ -4,7 +4,10 @@ def get_covid_articles_count(articles_date, conn):
     """
 
     cur = conn.cursor()
-    cur.execute(f"SELECT count(*) as cnt FROM articles WHERE published::date = '{articles_date}' AND covid_related = true;")
+    cur.execute(
+        "SELECT count(*) as cnt FROM articles "
+        f"WHERE published::date = '{articles_date}' AND covid_related = true;"
+    )
     result = cur.fetchone()
     cur.close()
 
